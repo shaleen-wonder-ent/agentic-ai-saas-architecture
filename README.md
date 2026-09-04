@@ -1,5 +1,61 @@
 # Enterprise SaaS Architecture Repository
 
+## Start here — what is this, in plain English?
+
+**The problem, in one sentence:** today the whole product runs out of a single computer
+(one Azure VM) — like running an entire company out of one van. If that van breaks down,
+gets a flat tyre, or someone breaks into it, the whole business stops. That's fine for a
+first prototype, but no serious customer or auditor will trust real data to a "van."
+
+**What we're proposing, in one sentence:** move the business out of the van and into a
+proper building — with a front desk that checks IDs, security guards, separate locked
+rooms for each customer, fire exits, and a back-office team that keeps the lights on —
+built using Microsoft Azure's standard blueprint for doing this properly.
+
+### The four pictures, explained like you're explaining it to a friend
+
+| Picture | Plain-English question it answers | Building analogy |
+|---|---|---|
+| **Application architecture** | "What is the app actually made of, and how do its parts talk to each other?" | The floor plan of the shop itself — the till, the stockroom, the staff, how an order moves from front counter to warehouse |
+| **Platform architecture** | "Who manages the building day-to-day — billing, monitoring, who's allowed to change what?" | The building's management office — reception, accounts department, maintenance team, the rulebook everyone follows |
+| **Networking & security architecture** | "What stops a stranger walking in and stealing something?" | The walls, locked doors, key-cards, security cameras and guards around the building |
+| **Combined architecture** | "Show me all of the above on one page." | A single site map showing the shop floor, the management office, and the security fence together |
+
+### The other big ideas, in plain English
+
+- **Multi-tenancy** = many customers share the same building safely. Most customers get
+  their own locked *apartment* in a shared building (cheaper, faster to set up — this is
+  called "pooled"). A few big customers who need extra guarantees can get their own
+  *private house* instead (more expensive, fully separate — this is called "silo"). Full
+  explanation: [docs/01-multitenancy-strategy.md](docs/01-multitenancy-strategy.md).
+- **WAF (Well-Architected Framework)** = Microsoft's quality checklist for cloud systems
+  — covering security, reliability, cost, speed, and day-to-day operations. Think of it as
+  a building inspector's checklist.
+- **CAF (Cloud Adoption Framework)** = Microsoft's step-by-step playbook for how to
+  *organise and roll out* a cloud project properly — who owns what subscription, what
+  gets checked before something goes live, how permissions are handed out.
+- We used both rulebooks so that if a customer's security team, auditor, or procurement
+  team asks "did you follow best practice?" — the answer is yes, and every answer below
+  points to exactly where in this pack it's proven:
+  [docs/05-waf-caf-mapping.md](docs/05-waf-caf-mapping.md).
+
+### How to explain this to someone else in 60 seconds
+
+> "We're moving the product off a single computer and into a properly built cloud setup.
+> One document and picture covers the app itself, one covers who manages it day-to-day,
+> and one covers the security fence around it — all built to Microsoft's official
+> best-practice rulebook, so it can survive a real security review. We also show how
+> multiple customers can safely share the same setup, and the step-by-step plan to get
+> there from where we are today."
+
+### Where to go next
+
+1. **Still want the fuller (but still readable) version?** →
+   [docs/00-executive-summary.md](docs/00-executive-summary.md)
+2. **Ready for the deep technical dive?** See the [reading order](#reading-order) below.
+
+---
+
 This repository contains the target-state architecture for evolving an **agentic AI
 platform for the insurance industry** from its current single-VM MVP into a
 **multi-tenant, enterprise-grade SaaS platform on Microsoft Azure**, aligned to the
