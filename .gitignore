@@ -1,0 +1,9 @@
+# Original customer-supplied source documents — contain identifying names, kept local only
+NEXA_AI_Platform_Architecture.pdf
+Nexa-AI-Enterprise-Readiness-Coforgev2.0.pptx
+~$*.pptx
+*.pdf
+*.pptx
+
+# Diagrams still contain brand-specific labels (meant for email sharing, not source control)
+diagrams/
