@@ -1,14 +1,14 @@
 # 02 — Application Architecture
 
-**Diagram:** [`diagrams/01-application-architecture.drawio`](../diagrams/01-application-architecture.drawio)
+**Diagram:** *01-application-architecture*
 
 ## Purpose
 
 Defines how the platform's existing application components (React frontend, FastAPI gateway,
 LangGraph agent runtime, MCP tool layer, governance plane, async workers) are re-hosted as
 a **multi-tenant SaaS workload** on Azure PaaS, preserving the current codebase's
-ports-and-adapters design (the PDF explicitly notes "same codebase runs on local Docker
-Compose or Azure managed services").
+ports-and-adapters design (the same codebase runs on local Docker Compose or Azure
+managed services).
 
 ## Layers (top to bottom in the diagram)
 
@@ -25,8 +25,8 @@ tenants, plus the platform admin persona used for control-plane operations.
 - **Microsoft Entra ID** — External ID for tenant end-users, Workload Identity for
   service-to-service calls, Conditional Access policies.
 
-This directly replaces the MVP's "public inbound endpoint, no WAF or gateway" with the
-enterprise target stated in the readiness pack ("Front Door with WAF, restricted inbound").
+This directly replaces the MVP's public inbound endpoint (no WAF or gateway) with a Front
+Door + WAF, restricted-inbound design.
 
 ### 3. Application runtime — Azure Container Apps environment
 One ACA environment per deployment stamp (shared for pool tenants, dedicated for silo
@@ -40,7 +40,7 @@ tenants), zone-redundant, with dev/test/staging/prod as separate environments/su
 | LangGraph Agent Runtime | ACA, KEDA-scaled | Orchestrator + shared/use-case agents; unchanged business logic |
 | MCP Tool Layer | ACA | claims / document / kb / fraud / compliance / notify tools; tool-scope enforcement startup invariant retained |
 | Governance Plane | ACA | Hash-chained audit ledger, guardrails (policy/PII/content-safety checks), HITL queue |
-| Async Workers | **ACA Jobs**, KEDA-scaled on Azure Service Bus queue depth | Replaces `arq` on Redis for the production target per the PDF; email intake, RFI timers, webhooks, alerts |
+| Async Workers | **ACA Jobs**, KEDA-scaled on Azure Service Bus queue depth | Replaces `arq` on Redis for the production target; email intake, RFI timers, webhooks, alerts |
 
 **Tenant isolation:** `tenant_id` partitioning + PostgreSQL row-level security for pooled
 tenants; a dedicated ACA environment and database for enterprise/silo tenants, both
@@ -55,8 +55,8 @@ workers. Redis is retained only for cache/idempotency/rate-limit counters (see d
 ### 5. AI / model layer
 - **Azure OpenAI Service**, accessed over a **private endpoint**, as the Azure-native LLM
   option.
-- **The customer's internal LLM marketplace** — remains the primary LLM per the PDF's
-  inventory, reached via APIM-managed egress rather than a raw outbound call.
+- **The internal LLM marketplace** — remains the primary LLM, reached via APIM-managed
+  egress rather than a raw outbound call.
 - **Anthropic Claude** and **OpenAI (gpt-4o-mini) fallback** — external providers, reached
   through **controlled egress** (Azure Firewall FQDN allow-list — see
   [04-networking-security-architecture.md](04-networking-security-architecture.md)), not a
@@ -71,7 +71,7 @@ workers. Redis is retained only for cache/idempotency/rate-limit counters (see d
 | Qdrant | **Azure AI Search (vector index)** or a managed Qdrant deployment on AKS, per-tenant collection |
 
 All four are reachable **only via private endpoints** inside the data spoke VNet — no
-public network access, closing the "model and data traffic over public routes" gap.
+public network access for model or data traffic.
 
 ### 7. Cross-cutting platform services
 Azure Key Vault (secrets/keys/certs, referenced via Managed Identity — no credentials in
@@ -94,7 +94,7 @@ architecture:
 
 ## Why Azure Container Apps rather than AKS
 
-The PDF's own stated production target is ACA + KEDA. We keep that decision because:
+ACA + KEDA is the recommended production target. This is kept because:
 - The workload is a set of stateless HTTP services and event-driven jobs — ACA's serverless
   Kubernetes-based model (KEDA, Dapr-ready, per-app scaling) fits without the operational
   overhead of running/patching an AKS control plane.

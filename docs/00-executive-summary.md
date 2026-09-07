@@ -18,34 +18,32 @@ async workers) running as **Docker Compose services co-located on a single Azure
 | Resilience | No backup/restore test, no DR plan, no RTO/RPO, no load testing |
 | Tenancy | Application code already partitions data by `tenant_id` across Postgres/MinIO/Qdrant — but the *infrastructure* has no tenant isolation, autoscaling, or noisy-neighbor protection |
 
-This is an appropriate shape for an MVP. It is **not** a shape that can be pointed at real
-customer data, sold into regulated insurance carriers, or defended in a customer security
-review, an audit, or a CISO conversation — which is exactly the gap the customer's own
-readiness pack (pillars: Security, Governance, Scalability/Resilience) identifies.
+Onboarding real customer data, selling into regulated insurance carriers, and standing up
+to a security review, an audit, or a CISO conversation all require the enterprise-grade
+foundations set out in this document — security and identity, governance, and
+scalability/resilience.
 
-## What this repository delivers
+## What this document sets out
 
-The customer asked for the detailed target architecture, split into the three views their
-engineering and security stakeholders need to sign off independently, plus one that shows
-how they fit together:
+This sets out the detailed target architecture, split into the three views engineering
+and security stakeholders can sign off independently, plus one that shows how they fit
+together:
 
 1. **[Application architecture](02-application-architecture.md)** — how the LangGraph
    agent runtime, MCP tools, governance plane and data tier run as a multi-tenant SaaS
    workload on Azure Container Apps.
 2. **[Platform architecture](03-platform-architecture.md)** — the Cloud Adoption
    Framework landing zone (management groups, subscriptions, policy) and the SaaS control
-   plane services (tenant management, observability, FinOps) that operate the platform,
-   modelled on the customer's own internal AI Asset Fabric reference architecture.
+   plane services (tenant management, observability, FinOps) that operate the platform.
 3. **[Networking & security architecture](04-networking-security-architecture.md)** — the
    hub-spoke network, zero-trust controls, and defense-in-depth design that satisfies the
-   Security pillar gaps called out in the readiness pack.
-4. A **combined single-page diagram** (`diagrams/04-combined-architecture.drawio`)
-   overlaying all three for an executive/board-level walkthrough.
+   Security pillar requirements.
+4. A **combined single-page diagram** (*04-combined-architecture*) overlaying all three
+   for an executive/board-level walkthrough.
 
 Every design decision is traceable to a specific **Azure Well-Architected Framework**
 pillar and a specific **Cloud Adoption Framework** methodology stage — see
-[05-waf-caf-mapping.md](05-waf-caf-mapping.md) for the traceability matrix requested for
-audit/procurement conversations.
+[05-waf-caf-mapping.md](05-waf-caf-mapping.md) for the traceability matrix.
 
 ## Target state at a glance
 
@@ -61,13 +59,3 @@ audit/procurement conversations.
 | Resilience | None | Zone redundancy, tested backup/restore, documented RTO/RPO, load & chaos testing |
 | Observability/FinOps | Prometheus/Grafana (dev-only) | Azure Monitor, Log Analytics, Microsoft Purview, Cost Management + chargeback |
 
-## How to use this pack with the customer
-
-- Use the **combined diagram** for the first executive conversation.
-- Use the **three individual diagrams + their docs** for the deep-dive sessions with each
-  stakeholder group (App engineering, Platform/DevOps, Security/Network).
-- Use **05-waf-caf-mapping.md** directly with their CISO/auditor/procurement teams — it is
-  written as a traceability matrix, not prose.
-- Use **06-migration-roadmap.md** to sequence the uplift against the "Open design
-  considerations" the customer already flagged (sizing, RAG threat model, landing zone
-  pattern, SLA).

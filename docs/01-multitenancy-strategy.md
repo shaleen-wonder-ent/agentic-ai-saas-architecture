@@ -1,6 +1,6 @@
 # 01 — Multi-Tenancy Strategy
 
-This document answers the customer's core question: **"How do we turn our product into a
+This document answers the core question: **"How do we turn our product into a
 multi-tenant SaaS product?"** It follows Microsoft's published guidance for
 [Architecting multitenant solutions on Azure](https://learn.microsoft.com/azure/architecture/guide/multitenant/overview)
 and the [SaaS design principles](https://learn.microsoft.com/azure/architecture/guide/saas/overview/introduction)
@@ -33,10 +33,9 @@ for the platform:
 | Regulated / enterprise tenants (large insurers, strict data-residency or compliance demands) | **Silo** — dedicated Azure Container Apps environment, dedicated database, dedicated Key Vault, optionally a dedicated region | Meets contractual isolation and residency commitments; contains blast radius; justified by deal size |
 | Both tiers | **Deployment Stamps pattern** ([Microsoft guidance](https://learn.microsoft.com/azure/architecture/patterns/deployment-stamp)) — a "stamp" is a repeatable, IaC-defined unit (ACA environment + data services + Key Vault) that can be deployed per silo tenant or per region for scale-out | Gives a single reusable Bicep/Terraform module for both the shared pool and each dedicated silo, instead of two codebases |
 
-This mirrors the model implied by the customer's own internal AI Asset Fabric reference
-architecture ("Multi-Tenant SaaS Platform" as a stated differentiator) and by the PDF's
-own production target (Container Apps + Service Bus + Entra ID), while giving the
-customer a sales-ready answer for enterprise prospects who require isolation.
+This mirrors the platform's own "Multi-Tenant SaaS Platform" positioning as a stated
+differentiator, and the stated production target (Container Apps + Service Bus + Entra
+ID), while providing a sales-ready answer for enterprise prospects who require isolation.
 
 ## 3. Tenant isolation by layer
 
@@ -86,7 +85,6 @@ automates, via IaC pipelines:
 - A single **reference architecture** (this repo's application/platform/networking
   diagrams) serves both the shared pool and, parameterized per stamp, every enterprise
   silo customer — no architecture fork.
-- Tenant onboarding becomes a **pipeline run**, not a manual VM configuration exercise —
-  directly addressing the "no IaC, no reproducible build" gap raised in the readiness pack.
-- The customer can quote **isolation as a commercial tier** (Standard/Pool vs Enterprise/Silo)
+- Tenant onboarding becomes a **pipeline run**, not a manual VM configuration exercise.
+- Isolation can be quoted **as a commercial tier** (Standard/Pool vs Enterprise/Silo)
   instead of re-architecting per deal.

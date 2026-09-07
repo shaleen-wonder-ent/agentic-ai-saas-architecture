@@ -1,18 +1,18 @@
 # 03 — Platform Architecture
 
-**Diagram:** [`diagrams/02-platform-architecture.drawio`](../diagrams/02-platform-architecture.drawio)
+**Diagram:** *02-platform-architecture*
 
 ## Purpose
 
 Defines the **Cloud Adoption Framework (CAF) landing zone** that hosts the platform, and
 the **SaaS control plane** (platform services that operate the product day to day) —
-modelled directly on the customer's own internal **"AI Asset Fabric"** reference
+modelled directly on the platform's own internal **"AI Asset Fabric"** reference
 architecture so the target architecture speaks the same language the business already
 uses internally.
 
-This is the direct answer to the readiness pack's Governance pillar gap: *"Single
-subscription, no landing zone... no Azure Policy or tagging standard... broad standing
-access... no formal change process... residency undocumented."*
+This addresses the Governance pillar directly: moving from a single subscription with no
+landing zone, no Azure Policy or tagging standard, broad standing access, no formal change
+process, and an undocumented residency position, to the target state set out below.
 
 ## 1. Management group and subscription design (CAF landing zone)
 
@@ -30,17 +30,17 @@ Tenant Root Management Group
 └── Sandbox Management Group                     — isolated experimentation, no path to prod data
 ```
 
-Rationale: a **single-product estate** (per the customer's own open design question) still
-benefits from separating Connectivity/Identity/Management from the product's own
-subscriptions, because it (a) lets platform-wide policy and network controls be managed
-once, (b) keeps blast radius of a compromised prod subscription away from identity/hub
-resources, and (c) gives clean cost attribution per environment from day one.
+Rationale: a **single-product estate** still benefits from separating
+Connectivity/Identity/Management from the product's own subscriptions, because it (a)
+lets platform-wide policy and network controls be managed once, (b) keeps blast radius of
+a compromised prod subscription away from identity/hub resources, and (c) gives clean
+cost attribution per environment from day one.
 
-## 2. SaaS control plane — "AI Asset Fabric" for Azure
+## 2. SaaS control plane - "AI Asset Fabric" for Azure
 
-The customer's own internal platform architecture already defines the control-plane
-functions the product needs. This architecture maps each function to concrete Azure
-services so it can be built, not just diagrammed:
+The platform's own internal architecture already defines the control-plane functions the
+product needs. This architecture maps each function to concrete Azure services so it can
+be built, not just diagrammed:
 
 | AI Asset Fabric function | Azure realization |
 |---|---|
@@ -55,7 +55,7 @@ services so it can be built, not just diagrammed:
 
 - **Azure Policy** — enforces the tagging standard, denies public IPs on PaaS, enforces
   approved SKUs/regions, and is the mechanism (not manual review) that keeps every
-  subscription compliant with the baseline agreed with the customer's security team.
+  subscription compliant with the agreed security baseline.
 - **Microsoft Entra ID** — identity foundation shared by workforce (the platform's
   build/ops team, least-privilege RBAC with just-in-time elevation via PIM) and workload
   identities.
@@ -68,13 +68,12 @@ services so it can be built, not just diagrammed:
   scanned for vulnerabilities before deployment.
 - **IaC + CI/CD** — Bicep or Terraform modules per landing zone/stamp, deployed only via
   Azure DevOps or GitHub Actions pipelines with mandatory approvals. This is the
-  **only change path** — replacing the MVP's "manual deployment, no rollback path."
+  **only change path** — replacing manual deployment with no rollback path.
 
 ## 4. Platform lifecycle
 
-The platform operates the six-stage lifecycle already presented to customers in the
-vendor's own rollout journey — **Select Use Case → Configure → Integrate → Validate →
-Deploy → Scale** — and this repository's platform architecture is what makes each stage
+The platform operates a six-stage lifecycle — **Select Use Case → Configure → Integrate →
+Validate → Deploy → Scale** — and this platform architecture is what makes each stage
 repeatable and auditable rather than a manual, bespoke engagement per customer:
 
 1. **Select Use Case** — tenant onboarding selects from the use-case marketplace
@@ -96,5 +95,5 @@ repeatable and auditable rather than a manual, bespoke engagement per customer:
 | Test / Staging | Non-Prod | Pipeline deploy with automated validation gate |
 | Prod | Production | Pipeline deploy with mandatory approval + change record, IaC-only |
 
-This closes the readiness pack's "no formal change process or approvals" and "no separate
-dev/test/prod" gaps directly.
+This directly addresses the lack of a formal change process and approvals, and the lack
+of separate dev/test/prod environments.

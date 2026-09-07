@@ -1,14 +1,13 @@
 # 04 — Networking & Security Architecture
 
-**Diagram:** [`diagrams/03-networking-security-architecture.drawio`](../diagrams/03-networking-security-architecture.drawio)
+**Diagram:** *03-networking-security-architecture*
 
 ## Purpose
 
 Defines the **hub-spoke network topology** and **zero-trust / defense-in-depth security
-controls** that close every gap listed under the readiness pack's Security pillar:
-*"Secrets in application config... no SSO... public inbound endpoint, no WAF... model and
-data traffic over public routes... no vulnerability or posture scanning... no documented
-threat model."*
+controls** that address the Security pillar directly: secrets management, SSO, inbound
+protection with a WAF, private routing for model and data traffic, vulnerability/posture
+scanning, and a documented threat model.
 
 ## 1. Topology — hub-spoke landing zone
 
@@ -34,7 +33,7 @@ Internet / tenant users
    → Azure Container Apps (internal ingress only)
 ```
 
-This is the direct replacement for the MVP's "Public IP, no WAF or gateway."
+This replaces a public IP with no WAF or gateway.
 
 ## 3. Egress path (outbound to AI providers)
 
@@ -47,9 +46,8 @@ allow-all:
   by default.
 - All egress is logged to the shared Log Analytics workspace for audit and anomaly
   detection.
-- This satisfies the "no documented threat model" / "model and data traffic over public
-  routes" gaps by making every external call an explicit, reviewable firewall rule instead
-  of an open outbound path from application code.
+- This makes every external call an explicit, reviewable firewall rule instead of an open
+  outbound path from application code.
 
 ## 4. Private endpoints — no public network access to data
 
@@ -75,7 +73,7 @@ resource configuration.
   every human sign-in; **Workload Identity Federation** for every service-to-service call,
   eliminating stored secrets/keys.
 - **Privileged Identity Management (PIM)** — just-in-time elevation for any standing access
-  the build/ops team needs, replacing the MVP's "broad standing access for the build team."
+  the build/ops team needs, replacing broad standing access for the build team.
 - **Azure Bastion** — the only path for interactive admin access to any VM-based
   component (e.g., build agents), no public RDP/SSH.
 - **Network Security Groups + Application Security Groups** on every subnet — explicit
@@ -89,15 +87,14 @@ resource configuration.
   **Defender for Storage**.
 - **Microsoft Sentinel** — SIEM/SOAR ingesting Defender alerts, Front Door/WAF logs,
   Firewall logs, Entra ID sign-in logs, and APIM logs for centralized detection and
-  response, replacing "no vulnerability or posture scanning" and "no centralised
-  detection" gaps.
+  response.
 - **Vulnerability scanning** — Defender for Containers scans ACR images pre-deployment;
   Defender for Cloud's agentless scanning covers the rest of the estate.
 
 ## 7. Threat model note (open design consideration)
 
-The readiness pack explicitly flags *"threat model for a RAG workload"* as still open.
-This architecture's contribution to that threat model:
+A **threat model for a RAG workload** is still an open item. This architecture's
+contribution to that threat model:
 - **Prompt injection / data exfiltration via RAG** — mitigated by the guardrails layer
   (policy/PII/content-safety checks on every agent output) plus per-tenant vector store
   partitioning, so a compromised prompt cannot retrieve another tenant's embeddings.
@@ -109,13 +106,12 @@ This architecture's contribution to that threat model:
 - A **formal STRIDE-based threat model** for the RAG/agent pipeline specifically (beyond
   network-level controls) is recommended as an early workstream in the migration roadmap
   — see [06-migration-roadmap.md](06-migration-roadmap.md) — and should feed the
-  **pen-test scope** the customer also flagged as still open.
+  **pen-test scope**, which remains an open item.
 
 ## 8. Private networking vs. developer velocity
 
-The customer flagged this explicitly as an open design consideration. Recommended
-resolution: keep **prod and staging fully private** (as described above); allow **dev**
-to use APIM in external/public mode (still behind Entra ID auth and Front Door) so
-engineers iterate without a VPN/Bastion hop for every change, with an Azure Policy
-exception scoped only to the Non-Production subscription. This is a deliberate,
-documented exception — not an ungoverned gap.
+This is an open design consideration. Recommended resolution: keep **prod and staging
+fully private** (as described above); allow **dev** to use APIM in external/public mode
+(still behind Entra ID auth and Front Door) so engineers iterate without a VPN/Bastion hop
+for every change, with an Azure Policy exception scoped only to the Non-Production
+subscription. This is a deliberate, documented exception — not an ungoverned gap.
