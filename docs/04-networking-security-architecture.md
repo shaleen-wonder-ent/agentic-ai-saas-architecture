@@ -115,3 +115,7 @@ fully private** (as described above); allow **dev** to use APIM in external/publ
 (still behind Entra ID auth and Front Door) so engineers iterate without a VPN/Bastion hop
 for every change, with an Azure Policy exception scoped only to the Non-Production
 subscription. This is a deliberate, documented exception — not an ungoverned gap.
+
+---
+
+**Next:** [WAF & CAF mapping](05-waf-caf-mapping.md)

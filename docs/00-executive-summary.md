@@ -59,3 +59,7 @@ pillar and a specific **Cloud Adoption Framework** methodology stage — see
 | Resilience | None | Zone redundancy, tested backup/restore, documented RTO/RPO, load & chaos testing |
 | Observability/FinOps | Prometheus/Grafana (dev-only) | Azure Monitor, Log Analytics, Microsoft Purview, Cost Management + chargeback |
 
+---
+
+**Next:** [Multi-tenancy strategy](01-multitenancy-strategy.md)
+

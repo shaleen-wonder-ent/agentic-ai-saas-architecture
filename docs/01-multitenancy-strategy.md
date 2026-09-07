@@ -88,3 +88,7 @@ automates, via IaC pipelines:
 - Tenant onboarding becomes a **pipeline run**, not a manual VM configuration exercise.
 - Isolation can be quoted **as a commercial tier** (Standard/Pool vs Enterprise/Silo)
   instead of re-architecting per deal.
+
+---
+
+**Next:** [Application architecture](02-application-architecture.md)

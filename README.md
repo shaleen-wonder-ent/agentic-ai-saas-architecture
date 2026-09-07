@@ -35,13 +35,6 @@ blueprint for doing this properly.
   points to exactly where in this pack it's proven:
   [WAF & CAF mapping](docs/05-waf-caf-mapping.md).
 
-### How to explain this to someone else in 60 seconds
-
-> "This sets out how the product runs as a properly built cloud setup. One document and
-> picture covers the app itself, one covers who manages it day-to-day, and one covers the
-> security fence around it — all built to Microsoft's official best-practice rulebook, so
-> it can stand up to a real security review. It also shows how multiple customers can
-> safely share the same setup, and the step-by-step plan to get there."
 
 ### Where to go next
 

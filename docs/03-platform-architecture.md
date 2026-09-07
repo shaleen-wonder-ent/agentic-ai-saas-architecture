@@ -97,3 +97,7 @@ repeatable and auditable rather than a manual, bespoke engagement per customer:
 
 This directly addresses the lack of a formal change process and approvals, and the lack
 of separate dev/test/prod environments.
+
+---
+
+**Next:** [Networking & security architecture](04-networking-security-architecture.md)

@@ -104,3 +104,7 @@ ACA + KEDA is the recommended production target. This is kept because:
   the same container images and Bicep/Terraform modules migrate to AKS with minimal
   rework — this is captured as an open design consideration in
   [06-migration-roadmap.md](06-migration-roadmap.md).
+
+---
+
+**Next:** [Platform architecture](03-platform-architecture.md)

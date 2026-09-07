@@ -60,3 +60,7 @@ methodology stage**, and to the exact current-state gap it addresses.
 | **Migrate/Innovate** | Application re-platforming from VM/Docker Compose to Azure Container Apps — [02](02-application-architecture.md) |
 | **Govern** | Azure Policy, tagging standard, RBAC + PIM, Microsoft Purview data governance — [03](03-platform-architecture.md) §3 |
 | **Manage** | Azure Monitor/Log Analytics, Defender for Cloud, Sentinel, FinOps (Cost Management) — [03](03-platform-architecture.md) §2, [04](04-networking-security-architecture.md) §6 |
+
+---
+
+**Next:** [Migration roadmap](06-migration-roadmap.md)
