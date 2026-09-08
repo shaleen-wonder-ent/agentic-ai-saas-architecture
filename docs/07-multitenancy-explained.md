@@ -164,6 +164,76 @@ flowchart TB
     APIM -->|"tenant_id: enterprise"| SApp
 ```
 
+## 6. The user journey, told as a story
+
+This is the same architecture as above, but walked through as one continuous story you
+can narrate out loud, start to finish.
+
+1. **User opens the app.** The browser loads the React front end from Azure Static Web
+   Apps — nothing tenant-specific has happened yet.
+2. **User logs in.** They're redirected to **Microsoft Entra ID**. Entra ID checks who
+   they are, applies Conditional Access (device/location/risk checks), and — the
+   important part — issues a token with the **tenant_id claim baked in**. This is the
+   moment the wristband gets put on.
+3. **Every request now passes through Front Door + WAF.** TLS is terminated, the Web
+   Application Firewall screens for malicious payloads, DDoS protection is watching in
+   the background. Front Door doesn't know or care which tenant this is — it's the
+   shared front door of the building.
+4. **API Management is the first place tenant identity is actually used.** APIM
+   validates the token's signature, reads the `tenant_id` claim, applies **that
+   tenant's** rate limit/quota, and logs the request — then decides where it goes next.
+5. **Multi-tenancy branches here.** Based on `tenant_id`, APIM routes the request into
+   either the **shared Pool stamp** (most customers) or that customer's **dedicated Silo
+   stamp** (enterprise customers) — same request, same token, different destination.
+6. **The Backend API Gateway (FastAPI) receives the request** inside whichever stamp it
+   landed in, checks JWT/RBAC scopes for this specific route, and hands off to the agent
+   runtime — still carrying `tenant_id`.
+7. **The LangGraph Agent Runtime takes over.** It runs the appropriate agent pipeline
+   (e.g., Claims Triaging), calling typed tools in the **MCP Tool Layer** — every tool
+   call is checked against that tenant's permission scope before it's allowed to run.
+8. **If the agent needs a model call**, it goes to **Azure OpenAI** (private endpoint,
+   in-network) or, for the primary/fallback providers, out through **Azure Firewall's**
+   allow-listed egress — never a raw, unfiltered path to the internet.
+9. **If confidence is low, a human steps in.** The pipeline pauses at a **Human-in-the-
+   Loop gate**, and a reviewer is notified before anything moves forward.
+10. **Every step writes to the Governance Plane.** An audit ledger entry is appended
+    (hash-chained, tamper-evident), scoped to `tenant_id`, so there's a complete record
+    of exactly what happened and why.
+11. **Data lands in the tenant's own space, not anyone else's.** Structured results go to
+    **PostgreSQL** (that tenant's schema, Row-Level Security double-checking), files go
+    to that tenant's **Blob container**, embeddings go to that tenant's **vector
+    collection**.
+12. **Background work happens asynchronously.** Things like RFI email dispatch are
+    picked up by **Async Workers** off that tenant's own **Service Bus queue** — so a
+    backlog on one tenant's jobs never delays another tenant's.
+13. **The result streams back to the user in real time** over SSE/WebSocket, and shows
+    up in the console with its audit trail attached.
+14. **Underneath all of this, the whole time:** **Key Vault** supplied every secret via
+    Managed Identity (no credentials ever in code), **Azure Monitor** collected telemetry
+    from every hop, **Microsoft Purview** classified any PII involved, and **Defender for
+    Cloud** watched the whole estate's posture — none of that is tenant-specific, it's
+    running underneath every request, for every tenant, all the time.
+
+```mermaid
+flowchart TD
+    A["User opens the app"] --> B["User logs in"]
+    B --> C["Microsoft Entra ID authenticates<br/>issues token with tenant_id claim"]
+    C --> D["Azure Front Door + WAF<br/>TLS, WAF rules, DDoS protection"]
+    D --> E["API Management<br/>validates token, reads tenant_id,<br/>applies per-tenant rate limit"]
+    E -->|"Multi-tenancy decision"| F{"Pool or Silo?"}
+    F -->|"Pooled tenant"| G["Shared Pool stamp"]
+    F -->|"Enterprise tenant"| H["Dedicated Silo stamp"]
+    G --> I["Backend API Gateway<br/>checks JWT/RBAC scopes"]
+    H --> I
+    I --> J["LangGraph Agent Runtime<br/>+ MCP Tool Layer"]
+    J --> K["Azure OpenAI / allow-listed<br/>external LLM providers"]
+    J --> L["Human-in-the-Loop gate<br/>(only if confidence is low)"]
+    J --> M["Governance Plane<br/>hash-chained audit entry"]
+    J --> N["Tenant-scoped data written:<br/>Postgres (RLS) - Blob - Vector store"]
+    N --> O["Async Workers<br/>via tenant's own Service Bus queue"]
+    J --> P["Result streamed back to user<br/>via SSE/WebSocket"]
+```
+
 ## Quick answers for the room
 
 | If they ask... | Say... |
