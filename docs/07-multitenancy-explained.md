@@ -143,10 +143,11 @@ flowchart TB
     TE["Enterprise Tenant (Silo)"]
 
     ID["Microsoft Entra ID<br/>issues tenant_id claim"]
-    FD["Azure Front Door + WAF"]
+    FD["Azure Front Door + WAF<br/>screens every request first"]
     APIM["API Management<br/>validates token, stamps tenant_id,<br/>per-tenant rate limit"]
 
-    TA & TB & TN & TE --> ID --> FD --> APIM
+    TA & TB & TN & TE --> FD --> APIM
+    ID -.->|"token consumed by"| APIM
 
     subgraph PoolStamp["Pool stamp - shared"]
         PApp["Shared ACA environment<br/>(Backend, LangGraph, MCP, Governance, Workers)"]
@@ -169,46 +170,47 @@ flowchart TB
 This is the same architecture as above, but walked through as one continuous story you
 can narrate out loud, start to finish.
 
-1. **User opens the app.** The browser loads the React front end from Azure Static Web
-   Apps — nothing tenant-specific has happened yet.
-2. **User logs in.** They're redirected to **Microsoft Entra ID**. Entra ID checks who
-   they are, applies Conditional Access (device/location/risk checks), and — the
-   important part — issues a token with the **tenant_id claim baked in**. This is the
-   moment the wristband gets put on.
-3. **Every request now passes through Front Door + WAF.** TLS is terminated, the Web
-   Application Firewall screens for malicious payloads, DDoS protection is watching in
-   the background. Front Door doesn't know or care which tenant this is — it's the
-   shared front door of the building.
-4. **API Management is the first place tenant identity is actually used.** APIM
+1. **User opens the app, and Front Door + WAF is already in the path.** Every single
+   request — even just loading the app, before anyone has logged in — passes through
+   **Azure Front Door + WAF** first: TLS termination, WAF rule screening, DDoS
+   protection watching in the background. This is always-on edge protection; it doesn't
+   know or care yet who the user is.
+2. **User logs in.** They're redirected to **Microsoft Entra ID** (outside the app's own
+   edge, at Microsoft's identity platform). Entra ID checks who they are, applies
+   Conditional Access (device/location/risk checks), and — the important part — issues a
+   token with the **tenant_id claim baked in**. This is the moment the wristband gets put
+   on. The browser is then redirected back to the app, request passing through Front
+   Door + WAF again like every other request.
+3. **API Management is the first place tenant identity is actually used.** APIM
    validates the token's signature, reads the `tenant_id` claim, applies **that
    tenant's** rate limit/quota, and logs the request — then decides where it goes next.
-5. **Multi-tenancy branches here.** Based on `tenant_id`, APIM routes the request into
+4. **Multi-tenancy branches here.** Based on `tenant_id`, APIM routes the request into
    either the **shared Pool stamp** (most customers) or that customer's **dedicated Silo
    stamp** (enterprise customers) — same request, same token, different destination.
-6. **The Backend API Gateway (FastAPI) receives the request** inside whichever stamp it
+5. **The Backend API Gateway (FastAPI) receives the request** inside whichever stamp it
    landed in, checks JWT/RBAC scopes for this specific route, and hands off to the agent
    runtime — still carrying `tenant_id`.
-7. **The LangGraph Agent Runtime takes over.** It runs the appropriate agent pipeline
+6. **The LangGraph Agent Runtime takes over.** It runs the appropriate agent pipeline
    (e.g., Claims Triaging), calling typed tools in the **MCP Tool Layer** — every tool
    call is checked against that tenant's permission scope before it's allowed to run.
-8. **If the agent needs a model call**, it goes to **Azure OpenAI** (private endpoint,
+7. **If the agent needs a model call**, it goes to **Azure OpenAI** (private endpoint,
    in-network) or, for the primary/fallback providers, out through **Azure Firewall's**
    allow-listed egress — never a raw, unfiltered path to the internet.
-9. **If confidence is low, a human steps in.** The pipeline pauses at a **Human-in-the-
+8. **If confidence is low, a human steps in.** The pipeline pauses at a **Human-in-the-
    Loop gate**, and a reviewer is notified before anything moves forward.
-10. **Every step writes to the Governance Plane.** An audit ledger entry is appended
+9. **Every step writes to the Governance Plane.** An audit ledger entry is appended
     (hash-chained, tamper-evident), scoped to `tenant_id`, so there's a complete record
     of exactly what happened and why.
-11. **Data lands in the tenant's own space, not anyone else's.** Structured results go to
+10. **Data lands in the tenant's own space, not anyone else's.** Structured results go to
     **PostgreSQL** (that tenant's schema, Row-Level Security double-checking), files go
     to that tenant's **Blob container**, embeddings go to that tenant's **vector
     collection**.
-12. **Background work happens asynchronously.** Things like RFI email dispatch are
+11. **Background work happens asynchronously.** Things like RFI email dispatch are
     picked up by **Async Workers** off that tenant's own **Service Bus queue** — so a
     backlog on one tenant's jobs never delays another tenant's.
-13. **The result streams back to the user in real time** over SSE/WebSocket, and shows
+12. **The result streams back to the user in real time** over SSE/WebSocket, and shows
     up in the console with its audit trail attached.
-14. **Underneath all of this, the whole time:** **Key Vault** supplied every secret via
+13. **Underneath all of this, the whole time:** **Key Vault** supplied every secret via
     Managed Identity (no credentials ever in code), **Azure Monitor** collected telemetry
     from every hop, **Microsoft Purview** classified any PII involved, and **Defender for
     Cloud** watched the whole estate's posture — none of that is tenant-specific, it's
@@ -216,10 +218,10 @@ can narrate out loud, start to finish.
 
 ```mermaid
 flowchart TD
-    A["User opens the app"] --> B["User logs in"]
-    B --> C["Microsoft Entra ID authenticates<br/>issues token with tenant_id claim"]
-    C --> D["Azure Front Door + WAF<br/>TLS, WAF rules, DDoS protection"]
-    D --> E["API Management<br/>validates token, reads tenant_id,<br/>applies per-tenant rate limit"]
+    A["User opens the app"] --> AFD["Azure Front Door + WAF<br/>TLS, WAF rules, DDoS protection<br/>- screens every request, always, first"]
+    AFD --> B["User logs in"]
+    B --> C["Redirected to Microsoft Entra ID<br/>authenticates, issues token with tenant_id claim"]
+    C --> E["API Management<br/>validates token, reads tenant_id,<br/>applies per-tenant rate limit"]
     E -->|"Multi-tenancy decision"| F{"Pool or Silo?"}
     F -->|"Pooled tenant"| G["Shared Pool stamp"]
     F -->|"Enterprise tenant"| H["Dedicated Silo stamp"]
