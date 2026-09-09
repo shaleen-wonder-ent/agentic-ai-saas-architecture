@@ -70,6 +70,20 @@ be built, not just diagrammed:
   Azure DevOps or GitHub Actions pipelines with mandatory approvals. This is the
   **only change path** — replacing manual deployment with no rollback path.
 
+## 3a. Landing zone workload services (data, AI, integration, scale)
+
+The landing zone provisions the concrete application, data and AI services the product
+runs on into the Production / Non-Production spokes. These are surfaced in the platform
+diagram so the landing zone owns their baseline (private endpoints, policy, tags) rather
+than leaving them to individual teams:
+
+| Category | Azure services |
+|---|---|
+| **Data & storage** | Azure Database for PostgreSQL Flexible Server, Azure Cosmos DB (NoSQL + MongoDB, operational data), Azure Cache for Redis, Azure Blob Storage, Azure Data Lake Storage Gen2 (analytics / long-term retention), Azure Queue Storage (background jobs) |
+| **AI — Azure AI Foundry** | Azure OpenAI Service, Azure AI Document Intelligence, Azure AI Content Safety, Azure AI Search (vector + knowledge index) |
+| **Integration & eventing** | Azure Service Bus, Azure Event Hubs (streaming telemetry), Azure Logic Apps, Azure Web PubSub (real-time updates), Azure Notification Hubs (alerts/emails) |
+| **Scale & performance** | Azure Container Apps (scale-to-zero + KEDA), Azure Kubernetes Service (autoscale — vector store / GPU option), Azure Load Testing |
+
 ## 4. Platform lifecycle
 
 The platform operates a six-stage lifecycle — **Select Use Case → Configure → Integrate →

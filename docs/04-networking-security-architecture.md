@@ -16,7 +16,7 @@ Following the [CAF hub-spoke network topology](https://learn.microsoft.com/azure
 | Network | Subscription | Purpose |
 |---|---|---|
 | **Hub VNet** (`10.0.0.0/22`) | Connectivity | Azure Firewall Premium, Azure Bastion, VPN/ExpressRoute Gateway, Private DNS Resolver + zones, shared Log Analytics/Sentinel workspace |
-| **App Spoke VNet** (`10.0.4.0/22`) | Production | `aca-infra` subnet (delegated, VNet-integrated Azure Container Apps environment, internal ingress only), `apim-subnet` (APIM deployed in internal/VNet-injection mode) |
+| **App Spoke VNet** (`10.0.4.0/22`) | Production | `aca-infra` subnet (delegated, VNet-integrated Azure Container Apps environment, internal ingress only), `apim-subnet` (APIM deployed in internal/VNet-injection mode), optional `aks-nodes` subnet (AKS for vector store / GPU workloads) and VNet-integrated Azure Functions (scheduled jobs) |
 | **Data Spoke VNet** (`10.0.8.0/22`) | Production | `private-endpoints` subnet carrying private endpoints for every PaaS data service |
 
 Hub↔spoke connectivity is via **VNet peering**; there is **no transit through the public
@@ -55,13 +55,20 @@ Every PaaS data/AI service used by the application is reachable **only** via a p
 endpoint in the Data Spoke:
 
 - Azure Database for PostgreSQL Flexible Server
+- Azure Cosmos DB (NoSQL + MongoDB)
 - Azure Cache for Redis
 - Azure Blob Storage
+- Azure Data Lake Storage Gen2
+- Azure Queue Storage
 - Azure Key Vault
 - Azure Service Bus
+- Azure Event Hubs
 - Azure Container Registry
 - Azure OpenAI Service
 - Azure AI Search (vector store)
+- Azure AI Document Intelligence
+- Azure AI Content Safety
+- Azure Web PubSub
 
 Public network access is explicitly disabled on each resource and enforced tenant-wide via
 an Azure Policy assignment (deny public network access on PaaS), not left to individual
