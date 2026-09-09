@@ -66,7 +66,7 @@ stencils.
     ├── 04-networking-security-architecture.md   Networking + Security architecture (view 3)
     ├── 05-waf-caf-mapping.md                    WAF pillar + CAF methodology traceability
     ├── 06-migration-roadmap.md                  Phased plan to the target state
-    └── 07-multitenancy-explained.md              One-page presenter reference, with flow diagrams
+    └── 07-multitenancy-explained.md              One-page multi-tenancy explainer, with flow diagrams
 ```
 
 Each document is accompanied by an editable architecture diagram covering the same view:
@@ -77,7 +77,7 @@ combining all three).
 ## Reading order
 
 1. [Executive summary](docs/00-executive-summary.md) — start here
-2. [Multi-tenancy strategy](docs/01-multitenancy-strategy.md) — or jump to the [presenter reference](docs/07-multitenancy-explained.md) for flow diagrams and talking points
+2. [Multi-tenancy strategy](docs/01-multitenancy-strategy.md) — or jump to the [multi-tenancy explainer](docs/07-multitenancy-explained.md) for flow diagrams
 3. [Application architecture](docs/02-application-architecture.md) + diagram: *01-application-architecture*
 4. [Platform architecture](docs/03-platform-architecture.md) + diagram: *02-platform-architecture*
 5. [Networking & security architecture](docs/04-networking-security-architecture.md) + diagram: *03-networking-security-architecture*

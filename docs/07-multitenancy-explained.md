@@ -1,8 +1,8 @@
-# 07 — Multi-Tenancy Explained (Presenter Reference)
+# 07 — Multi-Tenancy Explained
 
-One page, everything you need to explain multi-tenancy out loud: why `tenant_id` exists,
-how a "Deployment Stamp" works, how Pool vs. Silo actually run, and the diagrams to point
-at while you talk.
+A single-page explanation of how multi-tenancy works on this platform: why `tenant_id`
+exists, how a "Deployment Stamp" works, how Pool vs. Silo actually run, with a diagram for
+each part.
 
 ## The 30-second version
 
@@ -50,10 +50,10 @@ sequenceDiagram
     DB-->>LG: Only this tenant's rows come back
 ```
 
-**If someone asks "what if the application code has a bug and forgets to filter by
-tenant?"** — that's exactly why Row-Level Security exists at the database itself: even if
-the application "forgot," the database refuses to return rows that don't match the
-caller's `tenant_id`. Two independent checks, not one.
+**What if the application code has a bug and forgets to filter by tenant?** That is exactly
+why Row-Level Security exists at the database itself: even if the application "forgot," the
+database refuses to return rows that don't match the caller's `tenant_id`. Two independent
+checks, not one.
 
 ## 2. Pool vs. Silo — who shares what
 
@@ -85,15 +85,15 @@ flowchart TB
     end
 ```
 
-**If someone asks "why not just give everyone their own environment, it's simpler?"** —
-cost. A dedicated environment per customer is the most isolated option but the most
-expensive to run and slowest to onboard; Pool is what makes the product affordable at
-volume, and Silo is reserved for customers who need or pay for full isolation.
+**Why not just give everyone their own environment — isn't that simpler?** Cost. A
+dedicated environment per customer is the most isolated option but the most expensive to
+run and slowest to onboard; Pool is what makes the product affordable at volume, and Silo
+is reserved for customers who need or pay for full isolation.
 
-**If someone asks "why not just one shared database with no per-tenant schema at all?"**
-— blast radius and defense in depth. Schema-per-tenant plus Row-Level Security means a
-mistake in one tenant's data path is contained, and even a compromised application
-account can't be trivially used to query across every tenant's rows at once.
+**Why not just one shared database with no per-tenant schema at all?** Blast radius and
+defense in depth. Schema-per-tenant plus Row-Level Security means a mistake in one
+tenant's data path is contained, and even a compromised application account can't be
+trivially used to query across every tenant's rows at once.
 
 ## 3. What a "Deployment Stamp" actually is
 
@@ -167,8 +167,8 @@ flowchart TB
 
 ## 6. The user journey, told as a story
 
-This is the same architecture as above, but walked through as one continuous story you
-can narrate out loud, start to finish.
+This is the same architecture as above, walked through as one continuous story from start
+to finish.
 
 1. **User opens the app, and Front Door + WAF is already in the path.** Every single
    request — even just loading the app, before anyone has logged in — passes through
@@ -236,9 +236,9 @@ flowchart TD
     J --> P["Result streamed back to user<br/>via SSE/WebSocket"]
 ```
 
-## Quick answers for the room
+## Common questions
 
-| If they ask... | Say... |
+| Question | Answer |
 |---|---|
 | "What actually stops Tenant A seeing Tenant B's data?" | `tenant_id` scoping in every query, enforced twice: once in application code, once again by PostgreSQL Row-Level Security. |
 | "What's a Deployment Stamp again?" | One infrastructure template, deployed multiple times — once for the shared Pool, once per Silo customer, once per extra region. |
