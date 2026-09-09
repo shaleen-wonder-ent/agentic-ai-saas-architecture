@@ -66,7 +66,8 @@ stencils.
     ├── 04-networking-security-architecture.md   Networking + Security architecture (view 3)
     ├── 05-waf-caf-mapping.md                    WAF pillar + CAF methodology traceability
     ├── 06-migration-roadmap.md                  Phased plan to the target state
-    └── 07-multitenancy-explained.md              One-page multi-tenancy explainer, with flow diagrams
+    ├── 07-multitenancy-explained.md              One-page multi-tenancy explainer, with flow diagrams
+    └── 08-customer-walkthrough-story.md          Storytelling script for presenting to a customer
 ```
 
 Each document is accompanied by an editable architecture diagram covering the same view:
@@ -84,4 +85,5 @@ combining all three).
 6. Diagram: *04-combined-architecture* — everything on one page
 7. [WAF & CAF mapping](docs/05-waf-caf-mapping.md) — traceability for audit/procurement conversations
 8. [Migration roadmap](docs/06-migration-roadmap.md) — how to get there
+9. [Customer walkthrough (storytelling script)](docs/08-customer-walkthrough-story.md) — the front-to-back narrative to present from
 
