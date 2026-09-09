@@ -47,14 +47,28 @@ tenants; a dedicated ACA environment and database for enterprise/silo tenants, b
 generated from the same Deployment Stamps IaC module (see
 [01-multitenancy-strategy.md](01-multitenancy-strategy.md)).
 
-### 4. Messaging
+### 4. Messaging, integration & eventing
 **Azure Service Bus** replaces Redis-as-queue for production: queues/topics for
 email-intake, agent-jobs, and notifications, and is the KEDA scale trigger for async
 workers. Redis is retained only for cache/idempotency/rate-limit counters (see data layer).
+Alongside Service Bus, the platform uses a broader integration/eventing set:
 
-### 5. AI / model layer
+| Service | Role |
+|---|---|
+| **Azure Service Bus** | Queues/topics for email-intake, agent-jobs, notifications; KEDA scale trigger |
+| **Azure Event Hubs** | High-volume streaming telemetry ingestion |
+| **Azure Logic Apps** | Low-code integrations with partner/broker and line-of-business systems |
+| **Azure Web PubSub** | Real-time push of pipeline updates to the console (complements SSE/WebSocket) |
+| **Azure Notification Hubs** | Alert and email fan-out |
+| **Azure Functions** | Scheduled jobs (RFI timers, polling, housekeeping) |
+
+### 5. AI / model layer — Azure AI Foundry
 - **Azure OpenAI Service**, accessed over a **private endpoint**, as the Azure-native LLM
   option.
+- **Azure AI Document Intelligence** — OCR and structured field extraction for the
+  Document Intelligence pipeline (ACORD forms, loss reports, scanned attachments).
+- **Azure AI Content Safety** — content checks feeding the guardrails on every agent output.
+- **Azure AI Search** — the vector index / knowledge store (see data layer).
 - **The internal LLM marketplace** — remains the primary LLM, reached via APIM-managed
   egress rather than a raw outbound call.
 - **Anthropic Claude** and **OpenAI (gpt-4o-mini) fallback** — external providers, reached
@@ -66,11 +80,14 @@ workers. Redis is retained only for cache/idempotency/rate-limit counters (see d
 | Current (MVP) | Target (Azure) |
 |---|---|
 | PostgreSQL 16 (Docker) | **Azure Database for PostgreSQL Flexible Server**, zone-redundant HA, schema/RLS per tenant, hosts the audit ledger |
+| (new) | **Azure Cosmos DB** (NoSQL + MongoDB API) — operational/document data and tenant registry |
 | Redis 7 (Docker) | **Azure Cache for Redis** — job idempotency markers, rate-limit counters, token cache |
 | MinIO | **Azure Blob Storage** — container-per-tenant, immutability policy on audit artefacts |
+| (new) | **Azure Data Lake Storage Gen2** — analytics and long-term retention |
+| (new) | **Azure Queue Storage** — background-job queue |
 | Qdrant | **Azure AI Search (vector index)** or a managed Qdrant deployment on AKS, per-tenant collection |
 
-All four are reachable **only via private endpoints** inside the data spoke VNet — no
+All of these are reachable **only via private endpoints** inside the data spoke VNet — no
 public network access for model or data traffic.
 
 ### 7. Cross-cutting platform services
