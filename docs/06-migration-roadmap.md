@@ -40,9 +40,9 @@ workload can be deployed into.
   Compose-based, so this is a lift of existing Dockerfiles, not a rewrite).
 - Deploy the Azure Container Apps environment (App Spoke), APIM (internal mode), Front
   Door + WAF.
-- Migrate PostgreSQL → Azure Database for PostgreSQL Flexible Server (schema-per-tenant +
-  RLS), Redis → Azure Cache for Redis, MinIO → Azure Blob Storage, Qdrant → Azure AI
-  Search or managed Qdrant on AKS.
+- Migrate PostgreSQL → **Azure SQL Database** (schema-per-tenant + RLS, tamper-evident
+  ledger tables for the audit ledger), Redis → Azure Cache for Redis, MinIO → Azure Blob
+  Storage, Qdrant → Azure AI Search or managed Qdrant on AKS.
 - Wire JWT/Entra ID production auth mode (RS256 JWT validated against a JWKS URL is
   already implemented in code; it just needs the Entra ID tenant wired and TLS/network
   isolation applied).
@@ -57,7 +57,7 @@ no public inbound endpoint and no secrets outside Key Vault.
   (not manual configuration).
 - Apply Microsoft Purview data classification/DLP to the ingested insurance PII (FNOL
   details, ACORD forms, claimant PII).
-- Implement backup + tested restore for PostgreSQL/Blob; document RTO/RPO.
+- Implement backup + tested restore for Azure SQL Database/Blob; document RTO/RPO.
 - Run the first load/soak test to establish real throughput limits (currently unknown)
   and validate autoscaling rules.
 - Run a formal STRIDE-based threat model workshop for the RAG/agent pipeline (still an

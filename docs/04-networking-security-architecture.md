@@ -54,12 +54,9 @@ allow-all:
 Every PaaS data/AI service used by the application is reachable **only** via a private
 endpoint in the Data Spoke:
 
-- Azure Database for PostgreSQL Flexible Server
-- Azure Cosmos DB (NoSQL + MongoDB)
+- Azure SQL Database (Ledger)
 - Azure Cache for Redis
 - Azure Blob Storage
-- Azure Data Lake Storage Gen2
-- Azure Queue Storage
 - Azure Key Vault
 - Azure Service Bus
 - Azure Event Hubs

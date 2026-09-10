@@ -22,7 +22,7 @@ methodology stage**, and to the exact current-state gap it addresses.
 | Current-state gap | Architecture decision | Reference |
 |---|---|---|
 | Single VM, single point of failure | Azure Container Apps, zone-redundant, autoscaled | [02](02-application-architecture.md) §3 |
-| No backup/restore test | Automated backup for PostgreSQL/Blob with tested restore, documented RTO/RPO | [06](06-migration-roadmap.md) phase 3 |
+| No backup/restore test | Automated backup for Azure SQL Database/Blob with tested restore, documented RTO/RPO | [06](06-migration-roadmap.md) phase 3 |
 | No DR plan | Deployment Stamps pattern enables a secondary-region stamp; DR runbook | [01](01-multitenancy-strategy.md) §2, [06](06-migration-roadmap.md) phase 4 |
 | No load/soak testing | Load & chaos testing gated into CI/CD before prod promotion | [03](03-platform-architecture.md) §4 |
 

@@ -36,7 +36,7 @@ sequenceDiagram
     participant APIM as API Management
     participant BE as Backend API
     participant LG as LangGraph Agent Runtime
-    participant DB as PostgreSQL (Row-Level Security)
+    participant DB as Azure SQL Database (Row-Level Security)
 
     U->>ID: Sign in
     ID-->>U: Token containing the tenant_id claim
@@ -60,7 +60,7 @@ checks, not one.
 | | Pool (most customers) | Silo (large / regulated customers) |
 |---|---|---|
 | Compute | **Shared** Azure Container Apps environment | **Dedicated** Azure Container Apps environment |
-| Database | **Shared** PostgreSQL server, one schema per tenant + Row-Level Security | **Dedicated** PostgreSQL server |
+| Database | **Shared** Azure SQL Database, one schema per tenant + Row-Level Security | **Dedicated** Azure SQL Database |
 | Blob storage | **Shared** storage account, one container per tenant | **Dedicated** storage account |
 | Secrets | Shared Key Vault (per environment) | Dedicated Key Vault |
 | Cost | Lowest per tenant, fastest to onboard | Higher cost, sold as a premium/compliance tier |
@@ -70,7 +70,7 @@ flowchart TB
     subgraph Pool["Pool tier - most customers"]
         direction TB
         P1["Shared Azure Container Apps environment"]
-        P2[("PostgreSQL: schema-per-tenant + Row-Level Security")]
+        P2[("Azure SQL: schema-per-tenant + Row-Level Security")]
         P3["Shared Blob Storage: container-per-tenant"]
         P1 --> P2
         P1 --> P3
@@ -78,7 +78,7 @@ flowchart TB
     subgraph Silo["Silo tier - enterprise / regulated customers"]
         direction TB
         S1["Dedicated Azure Container Apps environment"]
-        S2[("Dedicated PostgreSQL server")]
+        S2[("Dedicated Azure SQL Database")]
         S3["Dedicated Blob Storage account"]
         S1 --> S2
         S1 --> S3
@@ -151,13 +151,13 @@ flowchart TB
 
     subgraph PoolStamp["Pool stamp - shared"]
         PApp["Shared ACA environment<br/>(Backend, LangGraph, MCP, Governance, Workers)"]
-        PDB[("Postgres: schema-per-tenant + RLS")]
+        PDB[("Azure SQL: schema-per-tenant + RLS")]
         PApp --> PDB
     end
 
     subgraph SiloStamp["Silo stamp - dedicated to Enterprise Tenant"]
         SApp["Dedicated ACA environment"]
-        SDB[("Dedicated Postgres")]
+        SDB[("Dedicated Azure SQL")]
         SApp --> SDB
     end
 
@@ -202,7 +202,7 @@ to finish.
     (hash-chained, tamper-evident), scoped to `tenant_id`, so there's a complete record
     of exactly what happened and why.
 10. **Data lands in the tenant's own space, not anyone else's.** Structured results go to
-    **PostgreSQL** (that tenant's schema, Row-Level Security double-checking), files go
+    **Azure SQL Database** (that tenant's schema, Row-Level Security double-checking), files go
     to that tenant's **Blob container**, embeddings go to that tenant's **vector
     collection**.
 11. **Background work happens asynchronously.** Things like RFI email dispatch are
@@ -231,7 +231,7 @@ flowchart TD
     J --> K["Azure OpenAI / allow-listed<br/>external LLM providers"]
     J --> L["Human-in-the-Loop gate<br/>(only if confidence is low)"]
     J --> M["Governance Plane<br/>hash-chained audit entry"]
-    J --> N["Tenant-scoped data written:<br/>Postgres (RLS) - Blob - Vector store"]
+    J --> N["Tenant-scoped data written:<br/>Azure SQL (RLS) - Blob - Vector store"]
     N --> O["Async Workers<br/>via tenant's own Service Bus queue"]
     J --> P["Result streamed back to user<br/>via SSE/WebSocket"]
 ```
@@ -240,7 +240,7 @@ flowchart TD
 
 | Question | Answer |
 |---|---|
-| "What actually stops Tenant A seeing Tenant B's data?" | `tenant_id` scoping in every query, enforced twice: once in application code, once again by PostgreSQL Row-Level Security. |
+| "What actually stops Tenant A seeing Tenant B's data?" | `tenant_id` scoping in every query, enforced twice: once in application code, once again by Azure SQL Database Row-Level Security. |
 | "What's a Deployment Stamp again?" | One infrastructure template, deployed multiple times — once for the shared Pool, once per Silo customer, once per extra region. |
 | "Does adding more customers mean redesigning anything?" | No — Pool customers are a registry entry inside the existing stamp; Silo customers are the same stamp deployed again. |
 | "What happens if one tenant sends a huge traffic spike?" | API Management enforces a per-tenant rate limit before it reaches shared compute, and Service Bus gives each tenant its own queue — so one tenant can't starve another. |

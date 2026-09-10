@@ -29,7 +29,7 @@ for the platform:
 
 | Tier | Model | Rationale |
 |---|---|---|
-| Standard tenants (most customers) | **Pool** — shared Azure Container Apps environment, shared PostgreSQL Flexible Server with schema-per-tenant + row-level security (RLS), shared Redis, shared Blob Storage account with container-per-tenant | Lowest cost per tenant, fastest onboarding, matches the platform's existing `tenant_id` partitioning model |
+| Standard tenants (most customers) | **Pool** — shared Azure Container Apps environment, shared Azure SQL Database with schema-per-tenant + row-level security (RLS), shared Redis, shared Blob Storage account with container-per-tenant | Lowest cost per tenant, fastest onboarding, matches the platform's existing `tenant_id` partitioning model |
 | Regulated / enterprise tenants (large insurers, strict data-residency or compliance demands) | **Silo** — dedicated Azure Container Apps environment, dedicated database, dedicated Key Vault, optionally a dedicated region | Meets contractual isolation and residency commitments; contains blast radius; justified by deal size |
 | Both tiers | **Deployment Stamps pattern** ([Microsoft guidance](https://learn.microsoft.com/azure/architecture/patterns/deployment-stamp)) — a "stamp" is a repeatable, IaC-defined unit (ACA environment + data services + Key Vault) that can be deployed per silo tenant or per region for scale-out | Gives a single reusable Bicep/Terraform module for both the shared pool and each dedicated silo, instead of two codebases |
 
@@ -44,7 +44,7 @@ ID), while providing a sales-ready answer for enterprise prospects who require i
 | **Identity** | Microsoft Entra ID **External ID** tenant per customer organization (or app roles + tenant claim in a single Entra app, depending on final IdP decision), issuing a `tenant_id` claim consumed by APIM and the backend |
 | **Edge / Gateway** | Azure API Management: one **APIM product + subscription key per tenant**, per-tenant rate limiting/quota policies, per-tenant request/response logging |
 | **Compute** | Pool tier: single ACA environment, `tenant_id` propagated through every agent/tool call and enforced in MCP tool-scope checks. Silo tier: dedicated ACA environment (own IP range, own scaling, own outage domain) |
-| **Data — relational** | Pool tier: PostgreSQL Flexible Server, **schema-per-tenant + Postgres Row-Level Security** as a defense-in-depth backstop to application-level scoping. Silo tier: dedicated Flexible Server instance |
+| **Data — relational** | Pool tier: Azure SQL Database, **schema-per-tenant + SQL Row-Level Security** as a defense-in-depth backstop to application-level scoping. Silo tier: dedicated Azure SQL Database instance |
 | **Data — blob** | Container-per-tenant inside a shared Storage Account (pool) or dedicated Storage Account (silo); immutability policy on audit artefacts either way |
 | **Data — vector** | Per-tenant collection/index in Azure AI Search or Qdrant, matching the existing Qdrant partitioning model |
 | **Secrets** | One **Key Vault per environment** (pool) or **per silo tenant**, secrets referenced only via Managed Identity — never shared across tenant boundaries |
@@ -58,7 +58,7 @@ A **Tenant Management Service** (new platform control-plane component — see
 automates, via IaC pipelines:
 
 1. **Provision** — create tenant record, Entra ID app role/tenant mapping, APIM
-   product+subscription, Postgres schema (or dedicated stamp for silo), Blob container,
+   product+subscription, Azure SQL schema (or dedicated stamp for silo), Blob container,
    Key Vault secret scope.
 2. **Configure** — apply tenant-specific guardrail/policy configuration, use-case
    entitlements (which of the six use cases the tenant is licensed for), quota/throttling

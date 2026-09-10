@@ -134,8 +134,8 @@ Microsoft's Cloud Adoption Framework."*
    Cloud**, **Container Registry**, and **IaC + CI/CD** as the *only* change path.
 
 4. **Landing-zone workload services.** The concrete data, AI, integration and scale services
-   the landing zone provisions into the spokes — **PostgreSQL, Cosmos DB, Redis, Blob, Data
-   Lake, Queue Storage; Azure OpenAI, Document Intelligence, Content Safety, AI Search;
+   the landing zone provisions into the spokes — **Azure SQL Database (Ledger), Redis, Blob;
+   Azure OpenAI, Document Intelligence, Content Safety, AI Search;
    Service Bus, Event Hubs, Logic Apps, Web PubSub, Notification Hubs; Container Apps, AKS,
    Load Testing.** *Why it matters:* the platform owns their baseline (private endpoints,
    policy, tags), not individual teams.
@@ -170,8 +170,8 @@ design — nothing talks to anything over the public internet unless we've expli
    only through **Azure Firewall Premium with an FQDN allow-list** — every outbound call is
    an explicit, logged, reviewable rule, not an open path from code.
 
-4. **Private endpoints — no public access to data.** Every PaaS data/AI service (PostgreSQL,
-   Cosmos DB, Redis, Blob, Data Lake, Queue, Key Vault, Service Bus, Event Hubs, ACR, Azure
+4. **Private endpoints — no public access to data.** Every PaaS data/AI service (Azure SQL
+   Database, Redis, Blob, Key Vault, Service Bus, Event Hubs, ACR, Azure
    OpenAI, AI Search, Document Intelligence, Content Safety, Web PubSub) is reachable **only**
    via a private endpoint, enforced tenant-wide by **Azure Policy**.
 
@@ -246,7 +246,7 @@ Azure — straight from Microsoft's multitenant SaaS guidance."*
    - **Gateway** — an APIM product + subscription key and rate-limit policy per tenant.
    - **Compute** — `tenant_id` enforced in every agent/tool call (pool); a dedicated
      environment (silo).
-   - **Relational data** — schema-per-tenant **plus Postgres Row-Level Security** (pool);
+   - **Relational data** — schema-per-tenant **plus Azure SQL Row-Level Security** (pool);
      dedicated server (silo).
    - **Blob / vector** — container/collection per tenant, or dedicated account (silo).
    - **Secrets** — Key Vault per environment or per silo tenant, never shared.

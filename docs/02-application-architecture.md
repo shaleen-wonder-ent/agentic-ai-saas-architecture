@@ -42,7 +42,7 @@ tenants), zone-redundant, with dev/test/staging/prod as separate environments/su
 | Governance Plane | ACA | Hash-chained audit ledger, guardrails (policy/PII/content-safety checks), HITL queue |
 | Async Workers | **ACA Jobs**, KEDA-scaled on Azure Service Bus queue depth | Replaces `arq` on Redis for the production target; email intake, RFI timers, webhooks, alerts |
 
-**Tenant isolation:** `tenant_id` partitioning + PostgreSQL row-level security for pooled
+**Tenant isolation:** `tenant_id` partitioning + Azure SQL row-level security for pooled
 tenants; a dedicated ACA environment and database for enterprise/silo tenants, both
 generated from the same Deployment Stamps IaC module (see
 [01-multitenancy-strategy.md](01-multitenancy-strategy.md)).
@@ -79,13 +79,10 @@ Alongside Service Bus, the platform uses a broader integration/eventing set:
 ### 6. Data layer — private endpoints only
 | Current (MVP) | Target (Azure) |
 |---|---|
-| PostgreSQL 16 (Docker) | **Azure Database for PostgreSQL Flexible Server**, zone-redundant HA, schema/RLS per tenant, hosts the audit ledger |
-| (new) | **Azure Cosmos DB** (NoSQL + MongoDB API) — operational/document data and tenant registry |
-| Redis 7 (Docker) | **Azure Cache for Redis** — job idempotency markers, rate-limit counters, token cache |
-| MinIO | **Azure Blob Storage** — container-per-tenant, immutability policy on audit artefacts |
-| (new) | **Azure Data Lake Storage Gen2** — analytics and long-term retention |
-| (new) | **Azure Queue Storage** — background-job queue |
-| Qdrant | **Azure AI Search (vector index)** or a managed Qdrant deployment on AKS, per-tenant collection |
+| PostgreSQL 16 (Docker) | **Azure SQL Database (Ledger)** — tenant metadata, users, workflow state, audit (tamper-evident ledger tables), configurations; schema/RLS per tenant |
+| Redis 7 (Docker) | **Azure Cache for Redis** — cache layer, job idempotency markers, rate-limit counters, token cache |
+| MinIO | **Azure Blob Storage** — documents, attachments, processed files; container-per-tenant, immutability policy on audit artefacts |
+| Qdrant | **Azure AI Search** — vector index, semantic search, embeddings; per-tenant collection |
 
 All of these are reachable **only via private endpoints** inside the data spoke VNet — no
 public network access for model or data traffic.
@@ -105,7 +102,7 @@ architecture:
 - Model Context Protocol (MCP) typed tool layer
 - SSE + WebSocket streaming to the console
 - Guardrails on every agent output
-- Immutable, hash-chained audit ledger
+- Immutable, hash-chained audit ledger (persisted in Azure SQL Database ledger tables — tamper-evident)
 - Use-case marketplace (new workflows deployable without platform redeploy)
 - Ports/adapters pattern (same code, different infrastructure bindings)
 

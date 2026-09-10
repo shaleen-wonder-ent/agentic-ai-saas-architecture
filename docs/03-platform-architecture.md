@@ -47,7 +47,7 @@ be built, not just diagrammed:
 | **Governance & Control** — Control Tower, Guardrails, AI Governance, Audit & Evidence | Azure Workbooks (ops dashboard) + the existing guardrail/audit-ledger services (now ACA-hosted) + Microsoft Purview for compliance evidence |
 | **Agent Lifecycle** — Agent Builder/Playgrounds, Testing Lab, Use-Case Marketplace | Internal low-code studio + connector test harness, deployed as an ACA app; use-case registry backing the "new workflows without platform redeploy" pattern |
 | **Connectivity** — MCP Gateway, Tool Connectors, API Gateway, Event Framework | MCP tool layer (ACA) + **Azure API Management** (API/AI Gateway) + **Azure Event Grid** for event-driven triggers |
-| **Administration** — Admin Config, Tenant Management, Tenants & API Keys | Tenant Management Service (Azure SQL/Cosmos DB-backed registry) + Azure App Configuration + Key Vault/APIM subscriptions for per-tenant isolation |
+| **Administration** — Admin Config, Tenant Management, Tenants & API Keys | Tenant Management Service (Azure SQL Database-backed registry) + Azure App Configuration + Key Vault/APIM subscriptions for per-tenant isolation |
 | **Observability & Governance** — Observability, AI Governance, Audit & Evidence | Azure Monitor + Log Analytics (logs/traces/metrics) + Microsoft Purview |
 | **FinOps** — Cost & usage control, Budgeting & Alerts, Chargeback | Azure Cost Management + Budgets, resource tagging (`tenant_id`, `tier`, `env`) driving chargeback/showback reports |
 
@@ -79,7 +79,7 @@ than leaving them to individual teams:
 
 | Category | Azure services |
 |---|---|
-| **Data & storage** | Azure Database for PostgreSQL Flexible Server, Azure Cosmos DB (NoSQL + MongoDB, operational data), Azure Cache for Redis, Azure Blob Storage, Azure Data Lake Storage Gen2 (analytics / long-term retention), Azure Queue Storage (background jobs) |
+| **Data & storage** | Azure SQL Database (Ledger — tenant metadata, users, workflow state, audit, configurations), Azure Cache for Redis (cache layer), Azure Blob Storage (documents, attachments, processed files) |
 | **AI — Azure AI Foundry** | Azure OpenAI Service, Azure AI Document Intelligence, Azure AI Content Safety, Azure AI Search (vector + knowledge index) |
 | **Integration & eventing** | Azure Service Bus, Azure Event Hubs (streaming telemetry), Azure Logic Apps, Azure Web PubSub (real-time updates), Azure Notification Hubs (alerts/emails) |
 | **Scale & performance** | Azure Container Apps (scale-to-zero + KEDA), Azure Kubernetes Service (autoscale — vector store / GPU option), Azure Load Testing |
